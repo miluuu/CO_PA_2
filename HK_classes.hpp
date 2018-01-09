@@ -57,7 +57,7 @@ private:
 public:
 	typedef std::size_t size_type;
 
-	// Creates an edge (the node_id's are the indices of the respective nodes in the vector graph_nodes, which stores at index i the coordinates of node i) and computes its rounded down euclidean length.
+	// Creates an edge (the node_id's are the indices of the respective nodes in the vector graph_nodes, which stores at index i the coordinates of node i), and computes its rounded down euclidean length.
 	Edge(NodeId const node1_id, NodeId const node2_id, std::vector<Node> & graph_nodes)
 	{
 		_nodes.first = node1_id;
@@ -80,15 +80,25 @@ public:
 class BranchingNode
 {
 private:
-	std::vector <Edge> required_edges;
-	std::vector <Edge> forbidden_edges;
-	std::vector <double> lambda; 
+	std::vector <Edge>  _required_edges;
+	std::vector <Edge>  _forbidden_edges;
+	std::vector <double> _lambda; 
+	
 public:	
-
-	BranchingNode(size_type numnodes): required_edges(std::vector <Edge>()), forbidden_edges(std::vector <Edge>()), lambda(std::vector <double>(numnodes))
+	BranchingNode ():
+	_required_edges(std::vector <Edge>()), _forbidden_edges(std::vector <Edge>()), _lambda(std::vector <double>())
 	{}
 	
-	//TODO: Branching Funktion
+	//Constructor for the branching nodes
+	BranchingNode(BranchingNode const & parent):
+	_required_edges(parent._required_edges), _forbidden_edges (parent._forbidden_edges), _lambda(parent._lambda)
+	{}
+	
+	void add_required_edge(Edge edge);
+	void add_forbidden_edge(Edge edge);
+	
+	//The candidate list Q is implemented in the vector "candidates".
+	void branch (std::vector <BranchingNode> & candidates, Edge & edge1, Edge & edge2);	
 };
 	
 

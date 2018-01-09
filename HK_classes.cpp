@@ -5,7 +5,39 @@
 namespace HK
 {
 
-//////////////// GLOBAL FUNCTIONS //////////////////////
+
+///////////////// BranchingNode definitions ////////////
+
+void BranchingNode::add_required_edge(Edge edge)
+{
+	_required_edges.push_back(edge);
+}
+
+
+void BranchingNode::add_forbidden_edge(Edge edge)
+{
+	_forbidden_edges.push_back(edge);
+}
+
+void BranchingNode::branch (std::vector <BranchingNode> & candidates, Edge & edge1, Edge & edge2)
+{
+	BranchingNode child1 = BranchingNode(*this);
+	BranchingNode child2 = BranchingNode(*this);
+	BranchingNode child3 = BranchingNode(*this);
+	
+	child1.add_forbidden_edge(edge1);
+	child2.add_required_edge(edge1);
+	child2.add_forbidden_edge(edge2);
+	child3.add_required_edge(edge1);
+	child3.add_required_edge(edge2);
+	
+	candidates.push_back(child1);
+	candidates.push_back(child2);
+	candidates.push_back(child3);	
+}
+
+
+//////////////// Global functions //////////////////////
 		
 NodeId from_tsplib_id(TsplibId const tsplib_id)
 {

@@ -23,6 +23,9 @@ using TsplibId = size_type;
 NodeId constexpr invalid_node_id = std::numeric_limits<NodeId>::max();
 TsplibId constexpr invalid_tsplib_id = std::numeric_limits<TsplibId>::max();
 
+//useful constant different from the cost of any actual edge:
+size_type constexpr invalid_cost = std::numeric_limits<size_type>::max();
+
 /**
    Nodes in TSPLIB files are counted from 1, but here we count them from 0 so they match their std::vector indices.
    These two trivial functions should help make the transition between the two models clear (instead of just having
@@ -41,7 +44,7 @@ public:
 	Node(double x_coord, double y_coord): _x_coord(x_coord), _y_coord(y_coord)
 	{
 	}
-
+	
 	// Computes rounded euclidean distance
 	friend int const distance(Node &node1, Node &node2);
 };
@@ -57,23 +60,20 @@ private:
 public:
 	typedef std::size_t size_type;
 
-	// Creates an edge (the node_id's are the indices of the respective nodes in the vector graph_nodes, which stores at index i the coordinates of node i), and computes its rounded down euclidean length.
-	Edge(NodeId const node1_id, NodeId const node2_id, std::vector<Node> & graph_nodes)
-	{
-		_nodes.first = node1_id;
-		_nodes.second = node2_id;
-		
-		Node & node1 = graph_nodes.at(node1_id);
-		Node & node2 = graph_nodes.at(node2_id);
-		
-		_cost = distance(node1, node2);
-	}
+	//Creates an edge with nodes of invalid_node_id cost of infinity.
+	Edge();
+	
+	// Creates an edge (the node_id's are the indices of the respective nodes in the vector _nodes_coordinates, which stores at index i the coordinates of node i) (_nodes_coordinates is only needed for the initialization fo the costs), and computes its rounded down euclidean length.
+	Edge(NodeId const node1_id, NodeId const node2_id, std::vector<Node> & _nodes_coordinates);
 
 	// Returns the ids of the incident nodes of this edge.
 	std::pair <NodeId, NodeId> const & nodes() const;
 	
-	// Returns the rounded Euclidean length of this edge.
+	// Returns the cost of this edge (not necessarily its rounded Euclidean length).
 	int const cost() const;
+	
+	//Sets a modified new cost for cost (needed in Held-Karp-lower-bound-algorithm)
+	void set_cost (double new_cost);
 };
 
 
@@ -83,26 +83,56 @@ private:
 	std::vector <Edge>  _required_edges;
 	std::vector <Edge>  _forbidden_edges;
 	std::vector <double> _lambda; 
+	size_type _HK_bound;
 	
 public:	
-	BranchingNode ():
-	_required_edges(std::vector <Edge>()), _forbidden_edges(std::vector <Edge>()), _lambda(std::vector <double>())
-	{}
+	//Constructor for the root
+	BranchingNode ();
 	
-	//Constructor for the branching nodes
-	BranchingNode(BranchingNode const & parent):
-	_required_edges(parent._required_edges), _forbidden_edges (parent._forbidden_edges), _lambda(parent._lambda)
-	{}
+	//Constructor for the branching nodes, copies all the values from the parent
+	BranchingNode(BranchingNode const & parent);
 	
+	//returns HK(K_n, c, R, F) (c= cost, R=required_edges, F=forbidden_edges)
+	size_type HK_bound();
+	
+	//adds an edge to _required_edges
 	void add_required_edge(Edge edge);
+	
+	//adds an edge to _forbidden_edges
 	void add_forbidden_edge(Edge edge);
 	
-	//The candidate list Q is implemented in the vector "candidates".
-	void branch (std::vector <BranchingNode> & candidates, Edge & edge1, Edge & edge2);	
+	//returns the vector with the lambda values
+	std::vector <double> & lambda();
 };
 	
 
+	// class for the minimum spanning trees
+class Min_1_tree
+{
+private:
+	NodeId _num_nodes;
+	std::vector< std::vector<Edge> > _incident_edges;
+	
+public:
+	// creates a graph with num_nodes isolated nodes
+	Min_1_tree (NodeId const num_nodes);
+	
+	//returns the number of nodes in the graph
+	NodeId num_nodes() const;
+	  
+	//returns the degree of the node with NodeId node_id  
+	size_type degree (NodeId node_id) const;
+	
+	//returns the array of incident edges of the node_id_th node
+	std::vector <Edge> const & incident_edges(NodeId const id) const;
+	
+	//adds edge at the end of the incidence-edges-vector of node id
+	void add_edge (NodeId id, Edge & edge);
+};	
+
+	
 //BEGIN: Inline section
+
 
 inline
 std::pair <NodeId, NodeId> const & Edge::nodes() const
@@ -114,6 +144,37 @@ inline
 int const Edge::cost() const
 {
 	return _cost;
+}
+
+inline
+NodeId Min_1_tree::num_nodes() const
+{
+   return _num_nodes;
+}
+
+
+inline
+size_type Min_1_tree::degree(NodeId node_id) const
+{
+   return (_incident_edges.at(node_id)).size();
+}
+
+inline
+std::vector <Edge> const & Min_1_tree::incident_edges(NodeId const id) const
+{
+	return _incident_edges.at(id);
+}
+
+inline
+size_type BranchingNode::HK_bound() 
+{
+	return _HK_bound;
+}
+
+inline
+std::vector <double> & BranchingNode::lambda()
+{
+	return _lambda;
 }
 
 //END: Inline section

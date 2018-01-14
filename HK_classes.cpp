@@ -1,12 +1,49 @@
 #include "HK_classes.hpp"
-#include <iostream>
 #include <cmath>
 
 namespace HK
 {
 
+///////////////// Edge definitions /////////////////////
+
+Edge::Edge()
+{
+	_nodes = std::pair <NodeId, NodeId> (invalid_node_id, invalid_node_id);
+	_cost = invalid_cost;
+}
+
+Edge::Edge(NodeId const node1_id, NodeId const node2_id, std::vector<Node> & _nodes_coordinates)
+{
+	_nodes.first = node1_id;
+	_nodes.second = node2_id;
+	
+	Node & node1 = _nodes_coordinates.at(node1_id);
+	Node & node2 = _nodes_coordinates.at(node2_id);
+	
+	_cost = distance(node1, node2);
+}
+
+void Edge::set_cost (double new_cost)
+{
+	_cost = new_cost;
+}
 
 ///////////////// BranchingNode definitions ////////////
+
+BranchingNode::BranchingNode()
+	:
+	_required_edges(std::vector <Edge>()),
+	_forbidden_edges(std::vector <Edge>()),
+	_lambda(std::vector <double>()),
+	_HK_bound(invalid_cost)
+{}
+	
+BranchingNode::BranchingNode(BranchingNode const & parent)
+	:
+	_required_edges(parent._required_edges), 
+	_forbidden_edges (parent._forbidden_edges), 
+	_lambda(parent._lambda)
+{}
 
 void BranchingNode::add_required_edge(Edge edge)
 {
@@ -18,24 +55,18 @@ void BranchingNode::add_forbidden_edge(Edge edge)
 {
 	_forbidden_edges.push_back(edge);
 }
+//////////////// Min_1_tree definitions //////////////////////
 
-void BranchingNode::branch (std::vector <BranchingNode> & candidates, Edge & edge1, Edge & edge2)
+Min_1_tree::Min_1_tree(NodeId const num_nodes)
+   :
+   _num_nodes(num_nodes),
+   _incident_edges (std::vector < std::vector<Edge> > (num_nodes))
+{}
+
+void Min_1_tree::add_edge (NodeId id, Edge & edge)
 {
-	BranchingNode child1 = BranchingNode(*this);
-	BranchingNode child2 = BranchingNode(*this);
-	BranchingNode child3 = BranchingNode(*this);
-	
-	child1.add_forbidden_edge(edge1);
-	child2.add_required_edge(edge1);
-	child2.add_forbidden_edge(edge2);
-	child3.add_required_edge(edge1);
-	child3.add_required_edge(edge2);
-	
-	candidates.push_back(child1);
-	candidates.push_back(child2);
-	candidates.push_back(child3);	
+	(_incident_edges.at(id)).push_back(edge);
 }
-
 
 //////////////// Global functions //////////////////////
 		

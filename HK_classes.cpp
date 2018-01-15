@@ -28,21 +28,50 @@ void Edge::set_cost (double new_cost)
 	_cost = new_cost;
 }
 
+//////////////// Min_1_tree definitions //////////////////////
+
+Min_1_tree::Min_1_tree(NodeId const num_nodes)
+   :
+   _num_nodes(num_nodes),
+   _incident_edges (std::vector < std::vector<Edge> > (num_nodes))
+{}
+
+double Min_1_tree::cost()
+{
+	double cost = 0;
+	for(size_type iter1 = 0; iter1 < _num_nodes; iter1++) 
+	{
+		for (size_type iter2 = 0; iter2 < _incident_edges.at(iter1).size(); iter2++)
+			cost += _incident_edges.at(iter1).at(iter2).cost();
+	}
+	return 0.5 * cost; //since every edge appears twice as an incident edge
+}
+
+void Min_1_tree::add_edge (NodeId id, Edge & edge)
+{
+	(_incident_edges.at(id)).push_back(edge);
+}
+
+
 ///////////////// BranchingNode definitions ////////////
 
-BranchingNode::BranchingNode()
+BranchingNode::BranchingNode(NodeId num_nodes)
 	:
 	_required_edges(std::vector <Edge>()),
 	_forbidden_edges(std::vector <Edge>()),
-	_lambda(std::vector <double>()),
-	_HK_bound(invalid_cost)
+	_lambda(std::vector <double>(num_nodes)),
+	_HK_bound(invalid_cost),
+	_HK_min_tree(Min_1_tree(num_nodes))
 {}
 	
 BranchingNode::BranchingNode(BranchingNode const & parent)
 	:
 	_required_edges(parent._required_edges), 
 	_forbidden_edges (parent._forbidden_edges), 
-	_lambda(parent._lambda)
+	_lambda(parent._lambda),
+	_HK_bound(invalid_cost),
+	_HK_min_tree(Min_1_tree(parent._lambda.size()))
+	
 {}
 
 void BranchingNode::set_HK_bound(size_type value) 
@@ -60,18 +89,13 @@ void BranchingNode::add_forbidden_edge(Edge edge)
 {
 	_forbidden_edges.push_back(edge);
 }
-//////////////// Min_1_tree definitions //////////////////////
 
-Min_1_tree::Min_1_tree(NodeId const num_nodes)
-   :
-   _num_nodes(num_nodes),
-   _incident_edges (std::vector < std::vector<Edge> > (num_nodes))
-{}
 
-void Min_1_tree::add_edge (NodeId id, Edge & edge)
+void BranchingNode::set_HK_min_tree(Min_1_tree & min_tree)
 {
-	(_incident_edges.at(id)).push_back(edge);
+		_HK_min_tree = min_tree;
 }
+
 
 //////////////// Global functions //////////////////////
 		

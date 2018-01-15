@@ -30,7 +30,11 @@ void branch_and_update_queue (BranchingNode const & branching_node, std::list <B
 	Y.N) If no, branch. 
  In all cases: Remove branching_node from the candidate list.
 */
-void process_branching_node (BranchingNode const & branching_node, Min_1_tree const min_tree, double min_tree_cost, size_type upper_bound, std::list <BranchingNode> & candidates, std::vector <Edge> & graph_edges, std::vector <size_type> & euclidean_costs, BranchingNode & branching_root);
+void process_branching_node (size_type upper_bound, std::list <BranchingNode> & candidates, std::vector <Edge> & graph_edges, std::vector <size_type> & euclidean_costs, BranchingNode & branching_root);
+	
+//final algorithm: computes the cost of the optimal TSP tour in the graph stored in file
+void branch_and_bound(std::string filename);
+	
 	
 } //namespace HK
 

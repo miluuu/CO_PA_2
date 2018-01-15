@@ -45,6 +45,11 @@ BranchingNode::BranchingNode(BranchingNode const & parent)
 	_lambda(parent._lambda)
 {}
 
+void BranchingNode::set_HK_bound(size_type value) 
+{
+	_HK_bound = value;
+}
+
 void BranchingNode::add_required_edge(Edge edge)
 {
 	_required_edges.push_back(edge);

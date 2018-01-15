@@ -93,13 +93,22 @@ public:
 	BranchingNode(BranchingNode const & parent);
 	
 	//returns HK(K_n, c, R, F) (c= cost, R=required_edges, F=forbidden_edges)
-	size_type HK_bound();
+	size_type HK_bound() const; 
+	
+	//set the value of HK(K_n, c, R, F)
+	void set_HK_bound(size_type value);
 	
 	//adds an edge to _required_edges
 	void add_required_edge(Edge edge);
 	
 	//adds an edge to _forbidden_edges
 	void add_forbidden_edge(Edge edge);
+	
+	//returns the id-th entry in required_edges
+	Edge const & required_edge(size_type id) const;
+	
+	//returns the number of required edges
+	size_type required_edges_size() const;
 	
 	//returns the vector with the lambda values
 	std::vector <double> & lambda();
@@ -166,13 +175,25 @@ std::vector <Edge> const & Min_1_tree::incident_edges(NodeId const id) const
 }
 
 inline
-size_type BranchingNode::HK_bound() 
+size_type BranchingNode::HK_bound()   const
 {
 	return _HK_bound;
 }
 
 inline
-std::vector <double> & BranchingNode::lambda()
+Edge const & BranchingNode::required_edge(size_type id) const
+{
+	return _required_edges.at(id);
+}
+
+inline
+size_type BranchingNode::required_edges_size() const
+{
+	return _required_edges.size();
+}
+
+inline
+std::vector <double> & BranchingNode::lambda() 
 {
 	return _lambda;
 }

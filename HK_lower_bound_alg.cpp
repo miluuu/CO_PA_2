@@ -1,5 +1,4 @@
 #include "HK_classes.hpp"
-#include "HK_subroutines.hpp"
 #include "HK_lower_bound_alg.hpp"
 #include <iostream>
 #include <cmath>
@@ -68,7 +67,7 @@ double HK_lower_bound_alg(std::vector <Edge> & graph_edges, std::vector <size_ty
 	double delta = delta_0;
 	double double_delta = stepsize_0 / ( iter_max * iter_max - iter_max);
 	double stepsize = stepsize_0;
-	
+	double epsilon = 0; //TODO: epsilon-Wert?
 	
 	//initialize lambda and the cost vector that saves the cost of the alculated min-cost-1-trees from all iterations
 	branching_node.lambda() = std::vector <double> (num_nodes, 0);
@@ -80,8 +79,8 @@ double HK_lower_bound_alg(std::vector <Edge> & graph_edges, std::vector <size_ty
 	{
 		set_new_cost(graph_edges, euclidean_costs, branching_node, num_nodes, branching_node.lambda());
 		
-		//TODO: Einfügen: Computer minimum weight-1-tree
-		tree_costs.at(iter) = COST_MIN_COST_TREE;
+		//TODO: Einfügen: Compute minimum weight-1-tree
+		tree_costs.at(iter) = std::ceil((1 - epsilon)*COST_MIN_COST_TREE); // (1-epsilon) correction factor for floating point arithmetic
 		update_lambda(MIN_COST_TREE, previous_degrees, branching_node.lambda(), iter, num_nodes, stepsize);
 		stepsize -= delta;
 		delta -= double_delta;

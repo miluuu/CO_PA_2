@@ -56,7 +56,7 @@ class Edge
 private:
 	std::pair<NodeId, NodeId> _nodes;
 	size_type _cost;
-
+	size_type _id;
 public:
 	typedef std::size_t size_type;
 
@@ -64,7 +64,7 @@ public:
 	Edge();
 	
 	// Creates an edge (the node_id's are the indices of the respective nodes in the vector _nodes_coordinates, which stores at index i the coordinates of node i) (_nodes_coordinates is only needed for the initialization fo the costs), and computes its rounded down euclidean length.
-	Edge(NodeId const node1_id, NodeId const node2_id, std::vector<Node> & _nodes_coordinates);
+	Edge(NodeId const node1_id, NodeId const node2_id, std::vector<Node> & _nodes_coordinates, size_type id);
 
 	// Returns the ids of the incident nodes of this edge.
 	std::pair <NodeId, NodeId> const & nodes() const;
@@ -74,6 +74,9 @@ public:
 	
 	//Sets a modified new cost for cost (needed in Held-Karp-lower-bound-algorithm)
 	void set_cost (double new_cost);
+	
+	//Returns the edge id
+	NodeId const get_id();
 };
 
 
@@ -154,6 +157,13 @@ int const Edge::cost() const
 {
 	return _cost;
 }
+
+inline
+NodeId const Edge::get_id()
+{
+	return _id;
+}
+
 
 inline
 NodeId Min_1_tree::num_nodes() const

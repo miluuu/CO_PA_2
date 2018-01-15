@@ -46,7 +46,7 @@ public:
 	}
 	
 	// Computes rounded euclidean distance
-	friend size_type distance(Node &node1, Node &node2);
+	friend int distance(Node &node1, Node &node2);
 };
 
 
@@ -56,7 +56,7 @@ class Edge
 private:
 	std::pair<NodeId, NodeId> _nodes;
 	size_type _cost;
-
+	size_type _id;
 public:
 	typedef std::size_t size_type;
 
@@ -64,16 +64,19 @@ public:
 	Edge();
 	
 	// Creates an edge (the node_id's are the indices of the respective nodes in the vector _nodes_coordinates, which stores at index i the coordinates of node i) (_nodes_coordinates is only needed for the initialization fo the costs), and computes its rounded down euclidean length.
-	Edge(NodeId const node1_id, NodeId const node2_id, std::vector<Node> & _nodes_coordinates);
+	Edge(NodeId const node1_id, NodeId const node2_id, std::vector<Node> & _nodes_coordinates, size_type id);
 
 	// Returns the ids of the incident nodes of this edge.
 	std::pair <NodeId, NodeId> const & nodes() const;
 	
 	// Returns the cost of this edge (not necessarily its rounded Euclidean length).
-	int cost() const;
+	int cost();
 	
 	//Sets a modified new cost for cost (needed in Held-Karp-lower-bound-algorithm)
 	void set_cost (double new_cost);
+	
+	//Returns the edge id
+	NodeId get_id();
 };
 
 
@@ -105,7 +108,7 @@ public:
 	void add_forbidden_edge(Edge edge);
 	
 	//returns the id-th entry in required_edges
-	Edge const & required_edge(size_type id) const;
+	Edge & required_edge(size_type id);
 	
 	//returns the number of required edges
 	size_type required_edges_size() const;
@@ -150,10 +153,17 @@ std::pair <NodeId, NodeId> const & Edge::nodes() const
 }
 
 inline
-int Edge::cost() const
+int Edge::cost()
 {
 	return _cost;
 }
+
+inline
+NodeId Edge::get_id()
+{
+	return _id;
+}
+
 
 inline
 NodeId Min_1_tree::num_nodes() const
@@ -181,7 +191,7 @@ size_type BranchingNode::HK_bound()   const
 }
 
 inline
-Edge const & BranchingNode::required_edge(size_type id) const
+Edge & BranchingNode::required_edge(size_type id)
 {
 	return _required_edges.at(id);
 }

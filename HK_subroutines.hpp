@@ -13,7 +13,7 @@ NodeId tour_check (Min_1_tree const & tree, Edge & edge1, Edge & edge2);
 
 //updates priority queue in the branching case (the processed parent branching node is removed, the new nodes are inserted into the sorted list). 
 //(If check_if_already_incident_edge yields positive answer, the parent branching node is only replaced by two new nodes, otherwise by three.)
-void update_queue (BranchingNode const & child1, BranchingNode const & child2, BranchingNode const & child3, std::list<BranchingNode> & candidates, bool check);
+void update_queue (BranchingNode const & parent, BranchingNode const & child1, BranchingNode const & child2, BranchingNode const & child3, std::list<BranchingNode> & candidates, bool check);
 
 //Subroutine for branch_and_update_queue (check if the branching child node with two new edges added to required_edges needs to be omitted because their shared adjacent vertex already has a required edge)
 bool check_if_already_incident_edge (NodeId id, BranchingNode const & branching_node);
@@ -32,6 +32,10 @@ void branch_and_update_queue (BranchingNode const & branching_node, std::list <B
 */
 void process_branching_node (BranchingNode const & branching_node, Min_1_tree const min_tree, double min_tree_cost, size_type upper_bound, std::list <BranchingNode> & candidates, std::vector <Edge> & graph_edges, std::vector <size_type> & euclidean_costs, BranchingNode & branching_root);
 	
+	
+std::vector<NodeId> incident_required_edges(NodeId node, BranchingNode & branching_node);
+
+void forbid_all_other_edges(NodeId node, BranchingNode & branching_node, std::vector<NodeId> required_edge_ids, std::vector<Edge> & graph_edges);	
 } //namespace HK
 
 #endif /* HK_SUBROUTINES_HPP */

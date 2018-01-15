@@ -29,7 +29,7 @@ NodeId tour_check (Min_1_tree const & tree, Edge & edge1, Edge & edge2)
 	return invalid_node_id;
 }
 
-void update_queue (BranchingNode const & child1, BranchingNode const & child2, BranchingNode const & child3, std::list<BranchingNode> & candidates, bool check)
+void update_queue (BranchingNode const & parent, BranchingNode const & child1, BranchingNode const & child2, BranchingNode const & child3, std::list<BranchingNode> & candidates, bool check)
 {
 	std::list<BranchingNode>::iterator it;
 	it = candidates.begin();
@@ -43,7 +43,7 @@ void update_queue (BranchingNode const & child1, BranchingNode const & child2, B
 
 }
 
-bool check_if_already_incident_edge (NodeId id, BranchingNode const & branching_node)
+bool check_if_already_incident_edge (NodeId id, BranchingNode & branching_node)
 {
 	size_type iter;
 	size_type size = branching_node.required_edges_size();
@@ -56,6 +56,66 @@ bool check_if_already_incident_edge (NodeId id, BranchingNode const & branching_
 	return 0;
 }
 
+std::vector<NodeId> incident_required_edges(NodeId node, BranchingNode & branching_node)
+{
+	NodeId count = 0;
+	std::vector<NodeId> incident_edge_ids;
+	std::vector<NodeId> incident_required_edge_ids;
+	unsigned int dimension = branching_node.lambda().size();
+	for(unsigned i = 0; i < dimension; i++)
+	{
+		
+		if(i<node)
+		{
+			incident_edge_ids.push_back(i * dimension + node);
+		}
+		else if(i>node)
+		{
+			incident_edge_ids.push_back(node * dimension + i);
+		}
+		
+	}
+	for(unsigned int i; i < branching_node.required_edges_size(); i++)
+	{
+		NodeId edge_id = branching_node.required_edge(i).get_id();
+		//std::vector<NodeId>::iterator it;
+		bool found = false;
+		for(unsigned int j = 0; j < incident_edge_ids.size(); j++)
+		{
+			
+			if(incident_edge_ids.at(j) == edge_id)
+				found = true;
+		}
+		if(found == true)
+		{
+			incident_required_edge_ids.push_back(edge_id);
+			count++;
+		}
+		if(count == 2)
+		{
+			return incident_required_edge_ids;
+		}
+		
+	}
+	return incident_required_edge_ids;	
+}
+
+void forbid_all_other_edges(NodeId node, BranchingNode & branching_node, std::vector<NodeId> required_edge_ids, std::vector<Edge> & graph_edges)
+{//TODO: Möglichkeit, Edges nach Id hinzuzufügen?
+	unsigned int count = 0;
+	unsigned int dimension = branching_node.lambda().size();
+	for(unsigned int i = 0; i < graph_edges.size() && count < dimension - 3; i++)
+	{
+		Edge edge = graph_edges.at(i);
+		if((edge.nodes().first == node || edge.nodes().second == node) && edge.get_id() != required_edge_ids.at(0) && edge.get_id() != required_edge_ids.at(1))
+		{
+			branching_node.add_forbidden_edge(edge);
+			count++;
+		}
+	}
+	
+}
+
 void branch_and_update_queue (BranchingNode const & branching_node, std::list <BranchingNode> & candidates, Edge & edge1, Edge & edge2, std::vector <Edge> & graph_edges, std::vector <size_type> & euclidean_costs, BranchingNode & branching_root, NodeId num_nodes, NodeId id)
 {
 	BranchingNode child1 = BranchingNode(branching_node);
@@ -66,6 +126,23 @@ void branch_and_update_queue (BranchingNode const & branching_node, std::list <B
 	child2.add_required_edge(edge1);
 	child2.add_forbidden_edge(edge2);
 	
+	//TODO: add case of a node with two incident required edges
+	//BEGIN insert
+	NodeId node_1=edge2.nodes().first;
+	NodeId node_2=edge2.nodes().second;
+	std::vector<NodeId> incident_required_ids_1=incident_required_edges(node_1, child2);
+	
+	std::vector<NodeId> incident_required_ids_2=incident_required_edges(node_2, child2);
+	if(incident_required_ids_1.size()==2)
+	{
+		forbid_all_other_edges(node_1, child2, incident_required_ids_1, graph_edges);
+	}
+	
+	if(incident_required_ids_2.size()==2)
+	{
+		forbid_all_other_edges(node_2, child2, incident_required_ids_2, graph_edges);
+	}
+	//END insert
 	child1.set_HK_bound(HK_lower_bound_alg(graph_edges, euclidean_costs, child1, branching_root, num_nodes, 0));
 	child2.set_HK_bound(HK_lower_bound_alg(graph_edges, euclidean_costs, child2, branching_root, num_nodes, 0));
 
@@ -74,10 +151,45 @@ void branch_and_update_queue (BranchingNode const & branching_node, std::list <B
 	{
 		child3.add_required_edge(edge1);
 		child3.add_required_edge(edge2);
+		//BEGIN insert
+		NodeId node_3 = id;
+		NodeId node_4;
+		NodeId node_5;
+		if(edge1.nodes().first == id)
+		{
+			node_4 = edge1.nodes().second;
+		}
+		else
+		{
+			node_4 = edge1.nodes().first;	
+		}
+		if(edge2.nodes().first == id)
+		{
+			node_5 = edge2.nodes().second;
+		}
+		else
+		{
+			node_5 = edge2.nodes().first;
+		}
+		std::vector<NodeId> incident_required_ids_3=incident_required_edges(node_3, child3);
+		std::vector<NodeId> incident_required_ids_4=incident_required_edges(node_4, child3);
+		std::vector<NodeId> incident_required_ids_5=incident_required_edges(node_5, child3);
+		forbid_all_other_edges(node_3, child3, incident_required_ids_3, graph_edges);
+		if(incident_required_ids_4.size()==2)
+		{
+			forbid_all_other_edges(node_4, child3, incident_required_ids_4, graph_edges);
+		}
+		
+		if(incident_required_ids_5.size()==2)
+		{
+			forbid_all_other_edges(node_5, child3, incident_required_ids_5, graph_edges);
+		}
+		
+		// END insert
 		child3.set_HK_bound(HK_lower_bound_alg(graph_edges, euclidean_costs, child3, branching_root, num_nodes, 0));
 	}
 
-	update_queue (child1, child2, child3, candidates, check);
+	update_queue (branching_node, child1, child2, child3, candidates, check);
 }
 
 void process_branching_node (BranchingNode const & branching_node, Min_1_tree const min_tree, double min_tree_cost, size_type upper_bound, std::list <BranchingNode> & candidates, std::vector <Edge> & graph_edges, std::vector <size_type> & euclidean_costs, BranchingNode & branching_root)

@@ -8,7 +8,7 @@ std::vector<Node> read_tsplib_input	(std::string filename);
 //Creates a vector of all edges in a complete graph with the costs given by the coordinates in @c nodes
 std::vector<Edge> create_complete_graph(std::vector<Node> & nodes);
 //Calculates a minimum 1-tree from the edges in @c edges on a graph with @c num_nodes nodes, wrt to the required and forbidden edges in the given vectors
-Min_1_tree min_1_tree (std::vector<Edge> & edges, size_type num_nodes, std::vector<Edge> & required_edges, std::vector<Edge> & forbidden_edges);
+Min_1_tree min_1_tree (std::vector<Edge> & edges, size_type num_nodes, BranchingNode & branching_node);
 //The Find-step of union-find, finds the representative ( or root) of the class of @c node, with ancestors given in @c ancestors
 NodeId find_union(NodeId node, std::vector<NodeId> & ancestors);
 //The Merge-Step in union-find, merges the two unions of @c node_1 and @c node_2, ancestors given by @c ancestors, the logarithmic sizes of the unions given by @c tree_sizes (at any given time, the entries in tree_sizes only have a sense for nodes that are actual roots)

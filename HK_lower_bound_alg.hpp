@@ -7,7 +7,7 @@ namespace HK
 {
 
 //subroutine for the Held-Karp-lower-bound-algorithm: updates the edge-costs in each iteration. 
-void set_new_cost (std::vector <Edge> & graph_edges, std::vector <size_type> & euclidean_costs, BranchingNode & branching_node, size_type num_nodes, std::vector<double> & lambda);
+void set_new_cost (std::vector <Edge> & graph_edges, std::vector <size_type> & euclidean_costs, BranchingNode & branching_node, size_type num_nodes);
 
 //subroutine for the Held-Karp-lower-bound-algorithm: update lambda (according to whether iter >= 2 (dampened case)or not)
 void update_lambda(Min_1_tree & current_tree, std::vector<size_type> & previous_degrees, std::vector<double> & lambda, size_type iter, size_type num_nodes, double stepsize);

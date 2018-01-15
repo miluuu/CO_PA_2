@@ -95,7 +95,7 @@ TsplibId to_tsplib_id(NodeId const node_id)
    return static_cast<TsplibId>(node_id + 1);
 }
 
-int const distance(Node &node1, Node &node2) 
+size_type distance(Node &node1, Node &node2) 
 {
 	double const x1 = node1._x_coord;
 	double const x2 = node2._x_coord;

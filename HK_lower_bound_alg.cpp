@@ -7,7 +7,7 @@
 namespace HK
 {
 
-void set_new_cost (std::vector <Edge> & graph_edges, std::vector <size_type> & euclidean_costs, BranchingNode & branching_node, size_type num_nodes, std::vector<double> & lambda)
+void set_new_cost (std::vector <Edge> & graph_edges, std::vector <size_type> & euclidean_costs, BranchingNode & branching_node, size_type num_nodes)
 {
 	size_type iter;
 	size_type num_edges = num_nodes * (num_nodes - 1) / 2; //since we have a complete graph	
@@ -68,19 +68,20 @@ double HK_lower_bound_alg(std::vector <Edge> & graph_edges, std::vector <size_ty
 	double double_delta = stepsize_0 / ( iter_max * iter_max - iter_max);
 	double stepsize = stepsize_0;
 	double epsilon = 0; //TODO: epsilon-Wert?
+	double max_cost = 0; // the maximal cost from all iterations is positive, since the cost of the min-cost-1-tree from the first iteration is positive
+	double current_cost;
 	
-	//initialize lambda and the cost vector that saves the cost of the alculated min-cost-1-trees from all iterations
 	branching_node.lambda() = std::vector <double> (num_nodes, 0);
-	std::vector<double> tree_costs = std::vector<double> (iter_max);
 	std::vector<size_type> previous_degrees = std::vector<size_type> (num_nodes); //saves for all nodes the degrees in the min-cost-1-tree of the previous iteration	
 	
 	//actual algorithm
 	for(iter = 0; iter < iter_max; iter++)
 	{
-		set_new_cost(graph_edges, euclidean_costs, branching_node, num_nodes, branching_node.lambda());
+		set_new_cost(graph_edges, euclidean_costs, branching_node, num_nodes);
 		
 		//TODO: Einfügen: Compute minimum weight-1-tree
-		tree_costs.at(iter) = std::ceil((1 - epsilon)*COST_MIN_COST_TREE); // (1-epsilon) correction factor for floating point arithmetic
+		current_cost = std::ceil((1 - epsilon)*COST_MIN_COST_TREE); // (1-epsilon) correction factor for floating point arithmetic
+		if (current_cost > max_cost) max_cost = current_cost;
 		update_lambda(MIN_COST_TREE, previous_degrees, branching_node.lambda(), iter, num_nodes, stepsize);
 		stepsize -= delta;
 		delta -= double_delta;
@@ -88,7 +89,7 @@ double HK_lower_bound_alg(std::vector <Edge> & graph_edges, std::vector <size_ty
 		for(size_type inner_iter = 0; inner_iter < num_nodes; inner_iter++) previous_degrees.at(inner_iter) = MIN_COST_TREE.degree(inner_iter);
 	}
 	
-	return *max_element(tree_costs.begin(), tree_costs.end());
+	return max_cost;
 }
 	
 }//namespace HK

@@ -46,7 +46,7 @@ public:
 	}
 	
 	// Computes rounded euclidean distance
-	friend int const distance(Node &node1, Node &node2);
+	friend size_type distance(Node &node1, Node &node2);
 };
 
 
@@ -70,7 +70,7 @@ public:
 	std::pair <NodeId, NodeId> const & nodes() const;
 	
 	// Returns the cost of this edge (not necessarily its rounded Euclidean length).
-	int const cost() const;
+	int cost() const;
 	
 	//Sets a modified new cost for cost (needed in Held-Karp-lower-bound-algorithm)
 	void set_cost (double new_cost);
@@ -150,7 +150,7 @@ std::pair <NodeId, NodeId> const & Edge::nodes() const
 }
 
 inline
-int const Edge::cost() const
+int Edge::cost() const
 {
 	return _cost;
 }

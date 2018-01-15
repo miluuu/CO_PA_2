@@ -29,7 +29,7 @@ NodeId tour_check (Min_1_tree const & tree, Edge & edge1, Edge & edge2)
 	return invalid_node_id;
 }
 
-void update_queue (BranchingNode const & parent, BranchingNode const & child1, BranchingNode const & child2, BranchingNode const & child3, std::list<BranchingNode> & candidates, bool check)
+void update_queue (BranchingNode const & child1, BranchingNode const & child2, BranchingNode const & child3, std::list<BranchingNode> & candidates, bool check)
 {
 	std::list<BranchingNode>::iterator it;
 	it = candidates.begin();
@@ -77,7 +77,7 @@ void branch_and_update_queue (BranchingNode const & branching_node, std::list <B
 		child3.set_HK_bound(HK_lower_bound_alg(graph_edges, euclidean_costs, child3, branching_root, num_nodes, 0));
 	}
 
-	update_queue (branching_node, child1, child2, child3, candidates, check);
+	update_queue (child1, child2, child3, candidates, check);
 }
 
 void process_branching_node (BranchingNode const & branching_node, Min_1_tree const min_tree, double min_tree_cost, size_type upper_bound, std::list <BranchingNode> & candidates, std::vector <Edge> & graph_edges, std::vector <size_type> & euclidean_costs, BranchingNode & branching_root)

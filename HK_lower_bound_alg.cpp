@@ -1,5 +1,6 @@
 #include "HK_classes.hpp"
 #include "HK_lower_bound_alg.hpp"
+#include "my_subroutines.hpp"
 #include <iostream>
 #include <cmath>
 #include <algorithm>
@@ -14,8 +15,12 @@ void set_new_cost (std::vector <Edge> & graph_edges, std::vector <size_type> & e
 	
 	for (iter = 0; iter < num_edges; iter++) 
 		{
+			
 			Edge edge= graph_edges.at(iter);
+			//std::cout<<"Edge cost before change "<<edge.cost()<<std::endl;
 			edge.set_cost(euclidean_costs.at(iter) + branching_node.lambda().at(edge.nodes().first) + branching_node.lambda().at(edge.nodes().second));
+			
+			//std::cout<<"Edge cost after change "<<edge.cost()<<std::endl;
 		}
 }
 	
@@ -25,7 +30,7 @@ void update_lambda(Min_1_tree & current_tree, std::vector<size_type> & previous_
 	double dampening_constant = 1;
 	if (iter >= 2) dampening_constant = 0.6;
 
-	for(size_type inner_iter = 0; inner_iter < num_nodes; iter++)
+	for(size_type inner_iter = 0; inner_iter < num_nodes; inner_iter++)
 	{
 		lambda.at(inner_iter) += stepsize * (dampening_constant * ( current_tree.degree(inner_iter) - 2 ) + (1 - dampening_constant) * ( previous_degrees.at(inner_iter) - 2 ));
 	}
@@ -57,12 +62,13 @@ void HK_lower_bound_alg(std::vector <Edge> & graph_edges, std::vector <size_type
 		}
 	}
 	
-	double delta_0 = 3 * stepsize_0 / 2 * iter_max;
+	double delta_0 = 3. * stepsize_0 / (2. * iter_max);
 	double delta = delta_0;
 	double double_delta = stepsize_0 / ( iter_max * iter_max - iter_max);
 	double stepsize = stepsize_0;
-	double epsilon = 0; //TODO: epsilon-Wert?
+	double epsilon = 0.; //TODO: epsilon-Wert?
 	branching_node.set_HK_bound(0); // the maximal cost from all iterations is positive, since the cost of the min-cost-1-tree from the first iteration is positive
+	//std::cout<<"HK Bound is "<<branching_node.HK_bound()<<std::endl;
 	double current_cost;
 	
 	branching_node.lambda() = std::vector <double> (num_nodes, 0);
@@ -75,16 +81,23 @@ void HK_lower_bound_alg(std::vector <Edge> & graph_edges, std::vector <size_type
 		set_new_cost(graph_edges, euclidean_costs, branching_node, num_nodes);
 		
 		current_tree = min_1_tree(graph_edges, num_nodes, branching_node);
+		//std::cout<<"Current tree cost is "<<current_tree.cost()<<std::endl;
 		current_cost = std::ceil((1 - epsilon)* current_tree.cost()); // (1-epsilon) correction factor for floating point arithmetic
+		//std::cout<<"Current cost is "<<current_cost<<std::endl;
 		if (current_cost > branching_node.HK_bound())
 		{
 			branching_node.set_HK_bound(current_cost);
 			branching_node.set_HK_min_tree(current_tree);
+			//std::cout<<"HK Bound is "<<branching_node.HK_bound()<<std::endl;
 		}			
+		// std::cout<<"HERE before update_lambda"<<std::endl;
 		update_lambda(current_tree, previous_degrees, branching_node.lambda(), iter, num_nodes, stepsize);
+		// std::cout<<"HERE after update_lambda"<<std::endl;
 		stepsize -= delta;
 		delta -= double_delta;
 		for(size_type inner_iter = 0; inner_iter < num_nodes; inner_iter++) previous_degrees.at(inner_iter) = current_tree.degree(inner_iter);
+		//std::cout<<"t the end HK Bound is "<<branching_node.HK_bound()<<std::endl;
+
 	}
 }
 	

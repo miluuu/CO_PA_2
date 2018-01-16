@@ -46,7 +46,7 @@ public:
 	}
 	
 	// Computes rounded euclidean distance
-	friend int distance(Node &node1, Node &node2);
+	friend size_type distance(Node &node1, Node &node2);
 };
 
 
@@ -76,7 +76,7 @@ public:
 	void set_cost (double new_cost);
 	
 	//Returns the edge id
-	NodeId get_id();
+	NodeId get_id() const;
 };
 
 
@@ -138,7 +138,7 @@ public:
 	void add_forbidden_edge(Edge edge);
 	
 	//returns the id-th entry in required_edges
-	Edge & required_edge(size_type id);
+	Edge const & required_edge(size_type id) const;
 	
 	//returns _HK_min_tree
 	Min_1_tree & HK_min_tree();
@@ -171,7 +171,7 @@ int Edge::cost()
 }
 
 inline
-NodeId Edge::get_id()
+NodeId Edge::get_id() const
 {
 	return _id;
 }
@@ -203,7 +203,7 @@ size_type BranchingNode::HK_bound()   const
 }
 
 inline
-Edge & BranchingNode::required_edge(size_type id)
+Edge const & BranchingNode::required_edge(size_type id) const
 {
 	return _required_edges.at(id);
 }

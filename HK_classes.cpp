@@ -10,9 +10,10 @@ Edge::Edge()
 {
 	_nodes = std::pair <NodeId, NodeId> (invalid_node_id, invalid_node_id);
 	_cost = invalid_cost;
+	_id = -1;
 }
 
-Edge::Edge(NodeId const node1_id, NodeId const node2_id, std::vector<Node> & _nodes_coordinates)
+Edge::Edge(NodeId const node1_id, NodeId const node2_id, std::vector<Node> & _nodes_coordinates, NodeId id)
 {
 	_nodes.first = node1_id;
 	_nodes.second = node2_id;
@@ -21,6 +22,8 @@ Edge::Edge(NodeId const node1_id, NodeId const node2_id, std::vector<Node> & _no
 	Node & node2 = _nodes_coordinates.at(node2_id);
 	
 	_cost = distance(node1, node2);
+	
+	_id = id;
 }
 
 void Edge::set_cost (double new_cost)

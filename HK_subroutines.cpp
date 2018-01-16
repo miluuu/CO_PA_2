@@ -5,13 +5,14 @@
 namespace HK
 {
 
-bool HK_comp (BranchingNode const & node1, BranchingNode const & node2)
+bool HK_comp (BranchingNode* const & node1, BranchingNode* const & node2)
 {
-	return (node1.HK_bound() < node2.HK_bound());
+	return (node1->HK_bound() < node2->HK_bound());
 }
 
 NodeId tour_check (Min_1_tree const & tree, Edge & edge1, Edge & edge2)
 {
+	//std::cout<<"TEST HERE!"<<std::endl;
 	size_type num_nodes = tree.num_nodes();
 	
 	//check if min-cost 1-tree tree is 2-regular (i.e. an optimum tour)
@@ -29,21 +30,21 @@ NodeId tour_check (Min_1_tree const & tree, Edge & edge1, Edge & edge2)
 	return invalid_node_id;
 }
 
-void update_queue (BranchingNode const & child1, BranchingNode const & child2, BranchingNode const & child3, std::list<BranchingNode> & candidates, bool check)
+void update_queue (BranchingNode & child1, BranchingNode & child2, BranchingNode & child3, std::list<BranchingNode*> & candidates, bool check)
 {
-	std::list<BranchingNode>::iterator it;
-	it = candidates.begin();
-	it++;
+	// std::list<BranchingNode>::iterator it;
+	// it = candidates.begin();
+	// it++;
 	
-	candidates.insert(it, child1);
-	candidates.insert(it, child2);
-	if (check == 0) candidates.insert(it, child3);	
+	candidates.push_back(&child1);
+	candidates.push_back(&child2);
+	if (check == 0) candidates.push_back(&child3);	
 	candidates.pop_front(); //remove parent 
 	candidates.sort(HK_comp);
 
 }
 
-bool check_if_already_incident_edge (NodeId id, BranchingNode & branching_node)
+bool check_if_already_incident_edge (NodeId id, BranchingNode const & branching_node)
 {
 	size_type iter;
 	size_type size = branching_node.required_edges_size();
@@ -116,7 +117,7 @@ void forbid_all_other_edges(NodeId node, BranchingNode & branching_node, std::ve
 	
 }
 
-void branch_and_update_queue (BranchingNode const & branching_node, std::list <BranchingNode> & candidates, Edge & edge1, Edge & edge2, std::vector <Edge> & graph_edges, std::vector <size_type> & euclidean_costs, BranchingNode & branching_root, NodeId num_nodes, NodeId id)
+void branch_and_update_queue (BranchingNode const & branching_node, std::list <BranchingNode*> & candidates, Edge & edge1, Edge & edge2, std::vector <Edge> & graph_edges, std::vector <size_type> & euclidean_costs, BranchingNode & branching_root, NodeId num_nodes, NodeId id)
 {
 	BranchingNode child1 = BranchingNode(branching_node);
 	BranchingNode child2 = BranchingNode(branching_node);
@@ -192,44 +193,59 @@ void branch_and_update_queue (BranchingNode const & branching_node, std::list <B
 	update_queue (child1, child2, child3, candidates, check);
 }
 
-void process_branching_node (size_type upper_bound, std::list <BranchingNode> & candidates, std::vector <Edge> & graph_edges, std::vector <size_type> & euclidean_costs, BranchingNode & branching_root)
+void process_branching_node (size_type upper_bound, std::list <BranchingNode*> & candidates, std::vector <Edge> & graph_edges, std::vector <size_type> & euclidean_costs, BranchingNode & branching_root)
 {
-	BranchingNode branching_node (candidates.front().lambda().size());
-	branching_node = candidates.front();
+	
+	// BranchingNode branching_node (candidates.front()->lambda().size());
+	std::cout<<"New branching_node created "<<std::endl;
+	std::cout<<"Candidate has size "<<candidates.size()<<std::endl;
+	// branching_node = *candidates.front();
+	std::cout<<"New branching_node assigned "<<std::endl;
 	
 	//if branching_node does not represent a solution leading to better cost than upper_bound, discard it
-	if (branching_node.HK_bound() >= upper_bound)
+	std::cout<<"In process_branching_node, HK_bound is "<<candidates.front()->HK_bound()<<std::endl;
+	if (candidates.front()->HK_bound() >= upper_bound)
 	{
+		
 			candidates.pop_front();
+			std::cout<<"FALL 0"<<std::endl;
 			return;
 	}
+	
 	else
 	{
+		
 		Edge edge1 = Edge();
 		Edge edge2 = Edge();
-		NodeId id = tour_check(branching_node.HK_min_tree(), edge1, edge2);
+		NodeId id = tour_check(candidates.front()->HK_min_tree(), edge1, edge2);
 		
 		//else if it is an optimum tour, update upper_bound
 		if (id == invalid_node_id) 
 		{
+			std::cout<<"FALL 1"<<std::endl;
+			
+			upper_bound = std::floor(candidates.front()->HK_bound());
 			candidates.pop_front();
-			upper_bound = std::floor(branching_node.HK_bound());
 			return;
 		}
 		
 		//else branch 
 		else
 		{	
-			branch_and_update_queue (branching_node, candidates, edge1, edge2, graph_edges, euclidean_costs, branching_root, branching_node.HK_min_tree().num_nodes(), id);
+			std::cout<<"FALL 2"<<std::endl;
+			
+			branch_and_update_queue (*candidates.front(), candidates, edge1, edge2, graph_edges, euclidean_costs, branching_root, candidates.front()->HK_min_tree().num_nodes(), id);
+			
 			return;
 		}
 	}
+	
 }
 	void branch_and_bound(std::string filename)
 	{
 		
 		//read in graph from file
-		std::vector <Node> graph_coordinates = read_tsplib_input(std::string filename);
+		std::vector <Node> graph_coordinates = read_tsplib_input(filename);
 		std::vector <Edge> graph_edges = create_complete_graph(graph_coordinates);
 		
 		//save the original euclidean costs of the edges
@@ -241,17 +257,25 @@ void process_branching_node (size_type upper_bound, std::list <BranchingNode> & 
 		size_type upper_bound = invalid_cost;
 		size_type num_nodes = graph_coordinates.size();
 		BranchingNode branching_root = BranchingNode(graph_coordinates.size());
-		std::list<HK::BranchingNode> candidates;
-		candidates.push_back(branching_root);
+		std::list<HK::BranchingNode*> candidates;
+		candidates.push_back(&branching_root);
 		
 		//branch and bound algorithm
 		HK_lower_bound_alg(graph_edges, euclidean_costs, branching_root, branching_root, num_nodes, 1); //initialize branching_root
+		std::cout<<"Branching root has upper bound "<<branching_root.HK_bound()<<std::endl;
+		std::cout<<"Candidates.front() root has upper bound "<<candidates.front()->HK_bound()<<std::endl;
 		
+		int count = 0;
 		while (candidates.size() != 0)
 		{
+			std::cout<<"First Candidate has upper bound "<<candidates.front()->HK_bound()<<std::endl;
 			process_branching_node(upper_bound, candidates, graph_edges, euclidean_costs, branching_root);
-		}
+			count ++;
 		
+			std::cout<<"Count is "<<count<<std::endl;
+			
+		}
+		std::cout<<"Count is "<<count<<std::endl;
 		std::cout << upper_bound << std::endl;
 	}
 

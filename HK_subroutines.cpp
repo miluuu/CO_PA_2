@@ -189,7 +189,7 @@ void branch_and_update_queue (BranchingNode const & branching_node, std::list <B
 		HK_lower_bound_alg(graph_edges, euclidean_costs, child3, branching_root, num_nodes, 0);
 	}
 
-	update_queue (branching_node, child1, child2, child3, candidates, check);
+	update_queue (child1, child2, child3, candidates, check);
 }
 
 void process_branching_node (size_type upper_bound, std::list <BranchingNode> & candidates, std::vector <Edge> & graph_edges, std::vector <size_type> & euclidean_costs, BranchingNode & branching_root)

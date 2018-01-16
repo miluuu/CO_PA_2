@@ -126,8 +126,7 @@ void branch_and_update_queue (BranchingNode const & branching_node, std::list <B
 	child2.add_required_edge(edge1);
 	child2.add_forbidden_edge(edge2);
 	
-	//TODO: add case of a node with two incident required edges
-	//BEGIN insert
+
 	NodeId node_1=edge2.nodes().first;
 	NodeId node_2=edge2.nodes().second;
 	std::vector<NodeId> incident_required_ids_1=incident_required_edges(node_1, child2);
@@ -142,7 +141,7 @@ void branch_and_update_queue (BranchingNode const & branching_node, std::list <B
 	{
 		forbid_all_other_edges(node_2, child2, incident_required_ids_2, graph_edges);
 	}
-	//END insert
+	
 	HK_lower_bound_alg(graph_edges, euclidean_costs, child1, branching_root, num_nodes, 0);
 	HK_lower_bound_alg(graph_edges, euclidean_costs, child2, branching_root, num_nodes, 0);
 
@@ -151,7 +150,7 @@ void branch_and_update_queue (BranchingNode const & branching_node, std::list <B
 	{
 		child3.add_required_edge(edge1);
 		child3.add_required_edge(edge2);
-		//BEGIN insert
+
 		NodeId node_3 = id;
 		NodeId node_4;
 		NodeId node_5;
@@ -186,16 +185,20 @@ void branch_and_update_queue (BranchingNode const & branching_node, std::list <B
 		}
 		
 		// END insert
+
 		HK_lower_bound_alg(graph_edges, euclidean_costs, child3, branching_root, num_nodes, 0);
 	}
 
 	update_queue (branching_node, child1, child2, child3, candidates, check);
 }
 
-void process_branching_node (BranchingNode const & branching_node, Min_1_tree const min_tree, double min_tree_cost, size_type upper_bound, std::list <BranchingNode> & candidates, std::vector <Edge> & graph_edges, std::vector <size_type> & euclidean_costs, BranchingNode & branching_root)
+void process_branching_node (size_type upper_bound, std::list <BranchingNode> & candidates, std::vector <Edge> & graph_edges, std::vector <size_type> & euclidean_costs, BranchingNode & branching_root)
 {
+	BranchingNode branching_node (candidates.front().lambda().size());
+	branching_node = candidates.front();
+	
 	//if branching_node does not represent a solution leading to better cost than upper_bound, discard it
-	if (min_tree_cost >= upper_bound)
+	if (branching_node.HK_bound() >= upper_bound)
 	{
 			candidates.pop_front();
 			return;
@@ -204,30 +207,30 @@ void process_branching_node (BranchingNode const & branching_node, Min_1_tree co
 	{
 		Edge edge1 = Edge();
 		Edge edge2 = Edge();
-		NodeId id = tour_check(min_tree, edge1, edge2);
+		NodeId id = tour_check(branching_node.HK_min_tree(), edge1, edge2);
 		
 		//else if it is an optimum tour, update upper_bound
 		if (id == invalid_node_id) 
 		{
 			candidates.pop_front();
-			upper_bound = std::floor(min_tree_cost);
+			upper_bound = std::floor(branching_node.HK_bound());
 			return;
 		}
 		
 		//else branch 
 		else
 		{	
-			branch_and_update_queue (branching_node, candidates, edge1, edge2, graph_edges, euclidean_costs, branching_root, min_tree.num_nodes(), id);
+			branch_and_update_queue (branching_node, candidates, edge1, edge2, graph_edges, euclidean_costs, branching_root, branching_node.HK_min_tree().num_nodes(), id);
 			return;
 		}
 	}
 }
-	void branch_and_bound(std::string filename, std::vector <Node> graph_coordinates, std::vector <Edge> graph_edges)
+	void branch_and_bound(std::string filename)
 	{
-		//TODO: uncomment two lines below, delete arguments graph_coordinates, graph_edges
+		
 		//read in graph from file
-		//std::vector <Node> graph_coordinates = read_tsplib_input(std::string filename);
-		//std::vector <Edge> graph_edges = create_complete_graph(graph_coordinates);
+		std::vector <Node> graph_coordinates = read_tsplib_input(std::string filename);
+		std::vector <Edge> graph_edges = create_complete_graph(graph_coordinates);
 		
 		//save the original euclidean costs of the edges
 		size_type num_edges = graph_edges.size();
@@ -253,4 +256,6 @@ void process_branching_node (BranchingNode const & branching_node, Min_1_tree co
 	}
 
 
+
 } //namespace HK
+

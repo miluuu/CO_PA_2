@@ -80,6 +80,35 @@ public:
 };
 
 
+// class for the minimum spanning trees
+class Min_1_tree
+{
+private:
+	NodeId _num_nodes;
+	std::vector< std::vector<Edge> > _incident_edges;
+	
+public:
+	// creates a graph with num_nodes isolated nodes
+	Min_1_tree (NodeId const num_nodes);
+	
+	//returns the number of nodes in the graph
+	NodeId num_nodes() const;
+	  
+	//returns the degree of the node with NodeId node_id  
+	size_type degree (NodeId node_id) const;
+	
+	//returns the cost of the Min_1_tree
+	double cost();
+	
+	//returns the array of incident edges of the node_id_th node
+	std::vector <Edge> const & incident_edges(NodeId const id) const;
+	
+	//adds edge at the end of the incidence-edges-vector of node id
+	void add_edge (NodeId id, Edge & edge);
+};	
+
+
+
 class BranchingNode
 {
 private:
@@ -87,10 +116,11 @@ private:
 	std::vector <Edge>  _forbidden_edges;
 	std::vector <double> _lambda; 
 	size_type _HK_bound;
+	Min_1_tree _HK_min_tree; //min-cost 1-tree from Held-Karp-lower-bound-algorithm
 	
 public:	
 	//Constructor for the root
-	BranchingNode ();
+	BranchingNode (NodeId num_nodes);
 	
 	//Constructor for the branching nodes, copies all the values from the parent
 	BranchingNode(BranchingNode const & parent);
@@ -110,6 +140,12 @@ public:
 	//returns the id-th entry in required_edges
 	Edge & required_edge(size_type id);
 	
+	//returns _HK_min_tree
+	Min_1_tree & HK_min_tree();
+	
+	//sets _HK_min_tree to min_tree
+	void set_HK_min_tree(Min_1_tree & min_tree);
+	
 	//returns the number of required edges
 	size_type required_edges_size() const;
 	
@@ -117,30 +153,6 @@ public:
 	std::vector <double> & lambda();
 };
 	
-
-	// class for the minimum spanning trees
-class Min_1_tree
-{
-private:
-	NodeId _num_nodes;
-	std::vector< std::vector<Edge> > _incident_edges;
-	
-public:
-	// creates a graph with num_nodes isolated nodes
-	Min_1_tree (NodeId const num_nodes);
-	
-	//returns the number of nodes in the graph
-	NodeId num_nodes() const;
-	  
-	//returns the degree of the node with NodeId node_id  
-	size_type degree (NodeId node_id) const;
-	
-	//returns the array of incident edges of the node_id_th node
-	std::vector <Edge> const & incident_edges(NodeId const id) const;
-	
-	//adds edge at the end of the incidence-edges-vector of node id
-	void add_edge (NodeId id, Edge & edge);
-};	
 
 	
 //BEGIN: Inline section
@@ -194,6 +206,12 @@ inline
 Edge & BranchingNode::required_edge(size_type id)
 {
 	return _required_edges.at(id);
+}
+
+inline
+Min_1_tree & BranchingNode::HK_min_tree() 
+{
+	return _HK_min_tree;
 }
 
 inline

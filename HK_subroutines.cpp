@@ -29,7 +29,7 @@ NodeId tour_check (Min_1_tree const & tree, Edge & edge1, Edge & edge2)
 	return invalid_node_id;
 }
 
-void update_queue (BranchingNode const & parent, BranchingNode const & child1, BranchingNode const & child2, BranchingNode const & child3, std::list<BranchingNode> & candidates, bool check)
+void update_queue (BranchingNode const & child1, BranchingNode const & child2, BranchingNode const & child3, std::list<BranchingNode> & candidates, bool check)
 {
 	std::list<BranchingNode>::iterator it;
 	it = candidates.begin();

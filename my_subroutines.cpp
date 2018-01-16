@@ -94,11 +94,12 @@ std::vector<Node> read_tsplib_input	(std::string filename)
 std::vector<Edge> create_complete_graph(std::vector<Node> & nodes)
 {
 	std::vector<Edge> edges;
+	unsigned int dimension = nodes.size();
 	for(unsigned int i = 0; i < nodes.size();i++)
 	{
 		for(unsigned int j = i+1; j < nodes.size(); j++)
 		{
-			edges.push_back(Edge(i, j, nodes));			
+			edges.push_back(Edge(i, j, nodes, i*dimension + j));
 		}
 		
 	}
@@ -119,7 +120,7 @@ bool compare_edge_costs (Edge edge_1, Edge edge_2)
 	}
 }
 	
-Min_1_tree min_1_tree (std::vector<Edge> & edges, size_type num_nodes, std::vector<Edge> & required_edges, std::vector<Edge> & forbidden_edges)
+Min_1_tree min_1_tree (std::vector<Edge> & edges, size_type num_nodes, BranchingNode & branching_node)
 {
 	std::vector<NodeId> ancestors;
 	for(unsigned int i = 0; i < num_nodes; i++)
@@ -135,9 +136,9 @@ Min_1_tree min_1_tree (std::vector<Edge> & edges, size_type num_nodes, std::vect
 	unsigned int num_1_edges = 0;
 	
 	//add required edges
-	for(unsigned int i = 0; i < required_edges.size(); i++)
+	for(unsigned int i = 0; i < branching_node.required_edges_size(); i++)
 	{
-		Edge current_edge = required_edges.at(i);
+		Edge current_edge = branching_node.required_edge(i);
 		NodeId node_1 = current_edge.nodes().first;
 		NodeId node_2 = current_edge.nodes().second;
 		
@@ -155,18 +156,9 @@ Min_1_tree min_1_tree (std::vector<Edge> & edges, size_type num_nodes, std::vect
 			num_1_edges++;
 		}
 		//mark edge as already added
-		//IDEA: add "edge-id"
-		//previously_added_edges.push_back(current_edge.id());
+		previously_added_edges.push_back(current_edge.get_id());
 		
 	}
-	//change costs of forbidden edges
-	for (unsigned int i = 0; i < forbidden_edges.size(); i++)
-	{
-		Edge current_edge = forbidden_edges.at(i);
-		current_edge.set_cost(invalid_cost);
-		
-	}
-	
 	
 	//sort edges by costs
 	std::stable_sort(edges.begin(), edges.end(), compare_edge_costs);
@@ -177,8 +169,8 @@ Min_1_tree min_1_tree (std::vector<Edge> & edges, size_type num_nodes, std::vect
 		Edge current_edge = edges.at(i);
 		NodeId node_1 = current_edge.nodes().first;
 		NodeId node_2 = current_edge.nodes().second;
-		// if(previously_added_edges.find(current_edge.id())!=previously_added_edges.last())
-			// continue;
+		if(std::find(previously_added_edges.begin(), previously_added_edges.end(), current_edge.get_id())!=previously_added_edges.end())
+			continue;
 		if(node_1 != 0 && node_2 != 0 && count != num_nodes - 2)
 		{			
 			if(find_union(node_1, ancestors) != find_union(node_2, ancestors))

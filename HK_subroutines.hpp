@@ -36,6 +36,10 @@ void process_branching_node (size_type upper_bound, std::list <BranchingNode> & 
 void branch_and_bound(std::string filename);
 	
 	
+	
+std::vector<NodeId> incident_required_edges(NodeId node, BranchingNode & branching_node);
+
+void forbid_all_other_edges(NodeId node, BranchingNode & branching_node, std::vector<NodeId> required_edge_ids, std::vector<Edge> & graph_edges);	
 } //namespace HK
 
 #endif /* HK_SUBROUTINES_HPP */

@@ -143,8 +143,8 @@ void branch_and_update_queue (BranchingNode const & branching_node, std::list <B
 		forbid_all_other_edges(node_2, child2, incident_required_ids_2, graph_edges);
 	}
 	//END insert
-	HK_lower_bound_alg(graph_edges, euclidean_costs, child1, branching_root, num_nodes, 0));
-	HK_lower_bound_alg(graph_edges, euclidean_costs, child2, branching_root, num_nodes, 0));
+	HK_lower_bound_alg(graph_edges, euclidean_costs, child1, branching_root, num_nodes, 0);
+	HK_lower_bound_alg(graph_edges, euclidean_costs, child2, branching_root, num_nodes, 0);
 
 	bool check = check_if_already_incident_edge (id, branching_node);
 	if (check == 0)
@@ -186,7 +186,7 @@ void branch_and_update_queue (BranchingNode const & branching_node, std::list <B
 		}
 		
 		// END insert
-		HK_lower_bound_alg(graph_edges, euclidean_costs, child3, branching_root, num_nodes, 0));
+		HK_lower_bound_alg(graph_edges, euclidean_costs, child3, branching_root, num_nodes, 0);
 	}
 
 	update_queue (branching_node, child1, child2, child3, candidates, check);

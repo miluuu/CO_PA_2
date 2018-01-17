@@ -2,7 +2,6 @@
 #define HK_SUBROUTINES_HPP
 #include "HK_classes.hpp"
 #include "HK_lower_bound_alg.hpp"
-#include "my_subroutines.hpp"
 #include <list>
 
 namespace HK
@@ -34,16 +33,29 @@ void branch_and_update_queue (BranchingNode & branching_node, std::list <Branchi
 	Y.N) If no, branch. 
  In all cases: Remove branching_node from the candidate list and return the current upper bound
 */
-size_type process_branching_node (size_type upper_bound, std::list <BranchingNode> & candidates, std::vector <Edge> & graph_edges, BranchingNode & branching_root);
+size_type process_branching_node (size_type upper_bound, std::list <BranchingNode> & candidates, std::vector <Edge> & graph_edges, BranchingNode & branching_root, Min_1_tree & opt_min_1_tree);
 	
 //final algorithm: computes the cost of the optimal TSP tour in the graph stored in file
-void branch_and_bound(std::string filename);
+void branch_and_bound(std::string filename, std::string optimal_tour_filename);
 	
 	
 	
 std::vector<NodeId> incident_required_edges(NodeId node, BranchingNode & branching_node);
 
 void forbid_all_other_edges(NodeId node, BranchingNode & branching_node, std::vector<NodeId> required_edge_ids, std::vector<Edge> & graph_edges);	
+//Creates a vector of node coordinates from the file @c filename
+std::vector<Node> read_tsplib_input	(std::string filename);
+//Creates a vector of all edges in a complete graph with the costs given by the coordinates in @c nodes
+std::vector<Edge> create_complete_graph(std::vector<Node> & nodes);
+//Calculates a minimum 1-tree from the edges in @c edges on a graph with @c num_nodes nodes, wrt to the required and forbidden edges in the given vectors
+Min_1_tree min_1_tree (std::vector<Edge> & edges, size_type num_nodes, BranchingNode & branching_node);
+//The Find-step of union-find, finds the representative ( or root) of the class of @c node, with ancestors given in @c ancestors
+NodeId find_union(NodeId node, std::vector<NodeId> & ancestors);
+//The Merge-Step in union-find, merges the two unions of @c node_1 and @c node_2, ancestors given by @c ancestors, the logarithmic sizes of the unions given by @c tree_sizes (at any given time, the entries in tree_sizes only have a sense for nodes that are actual roots)
+void merge_unions(NodeId node_1, NodeId node_2, std::vector<NodeId> & ancestors, std::vector<NodeId> & tree_sizes);
+//returns true, if edge_1 has cost at most as high as edge 2
+bool compare_edge_costs (Edge edge_1, Edge edge_2);
+
 } //namespace HK
 
 #endif /* HK_SUBROUTINES_HPP */

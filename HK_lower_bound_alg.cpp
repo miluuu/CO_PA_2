@@ -50,7 +50,7 @@ void update_lambda(Min_1_tree & current_tree, std::vector<int> & previous_degree
 		//std::cout << "stepsize" << stepsize << std::endl;
 		//std::cout << "current_tree.degree(inner_iter), inner_iter:" << inner_iter << "," << current_tree.degree(inner_iter) << std::endl;	
 		//std::cout << "temp" << temp << std::endl;
-		temp += stepsize * (dampening_constant * ( current_tree.degree(inner_iter) - 2 ) + (1 - dampening_constant) * ( previous_degrees.at(inner_iter) - 2 ));
+		temp += stepsize * (dampening_constant * ( current_tree.degree(inner_iter) - 2. ) + (1. - dampening_constant) * ( previous_degrees.at(inner_iter) - 2. ));
 		branching_node.set_lambda_at(inner_iter, temp);  
 	}
 	
@@ -75,9 +75,9 @@ void HK_lower_bound_alg(std::vector <Edge> & graph_edges, BranchingNode & branch
 
 		case 0: //not root
 		{
-			for (iter = 0; iter < num_nodes; iter++) stepsize_0 += std::abs(branching_root.lambda().at(iter));
-			stepsize_0 /= 2 * num_nodes;
-			iter_max = std::ceil ( num_nodes / 4 ) + 5;
+			for (iter = 0; iter < num_nodes; iter++) stepsize_0 += std::fabs(branching_root.lambda().at(iter));
+			stepsize_0 /= (2. * num_nodes);
+			iter_max = std::ceil ( num_nodes / 4. ) + 5.;
 			break;
 		}
 	}
@@ -102,14 +102,23 @@ void HK_lower_bound_alg(std::vector <Edge> & graph_edges, BranchingNode & branch
 		branching_node.forbidden_edges().at(j).set_cost(invalid_cost);
 	}
 	
+
 	
 	//actual algorithm
 	for(iter = 0; iter < iter_max; iter++)
 	{
 		set_new_cost(graph_edges, branching_node, num_nodes, forbidden_edges_ids);
 		
+		//TODO: DELETE
+		// for(size_type i = 0; i < num_nodes; i++) 
+			// std::cout << "lambda at i"<< branching_node.lambda().at(i) << ",i:" << i << std::endl;
+		// for(size_type i = 0; i < graph_edges.size(); i++) 
+			// std::cout << "cost of edge"<< graph_edges.at(i).cost() << ",edge from:" << graph_edges.at(i).nodes().first << "to" << graph_edges.at(i).nodes().second << std::endl;
+		// std::cout << "stepsize" << stepsize << std::endl;
+		
+		
 		current_tree = min_1_tree(graph_edges, num_nodes, branching_node);
-		std::cout<<"Current tree cost is "<<current_tree.cost()<<std::endl;
+		// std::cout<<"Current tree cost is "<<current_tree.cost()<<std::endl;
 		// std::cout << "lambda.at(2)" << branching_node.lambda().at(2) << std::endl;
 		// std::cout << "lambda.at(3)" << branching_node.lambda().at(3) << std::endl;
 		current_cost = std::ceil((1 - epsilon)* current_tree.cost()); // (1-epsilon) correction factor for floating point arithmetic
@@ -121,6 +130,15 @@ void HK_lower_bound_alg(std::vector <Edge> & graph_edges, BranchingNode & branch
 			//std::cout<<"HK Bound is "<<branching_node.HK_bound()<<std::endl;
 		}			
 		// std::cout<<"HERE before update_lambda"<<std::endl;
+		
+		//TODO:DELETE
+		// for(size_type i = 0; i < num_nodes; i++) 
+		// {
+			// std::cout << "current_tree.degree at i"<<current_tree.degree(i) << ",i:" << i << std::endl;
+			// std::cout << "previous_tree.degree at i"<<previous_degrees.at(i) << ",i:" << i << std::endl;
+			
+		// }
+		
 		update_lambda(current_tree, previous_degrees, branching_node, iter, num_nodes, stepsize);
 		
 		// std::cout<<"HERE after update_lambda"<<std::endl;
@@ -130,7 +148,7 @@ void HK_lower_bound_alg(std::vector <Edge> & graph_edges, BranchingNode & branch
 		//std::cout<<"t the end HK Bound is "<<branching_node.HK_bound()<<std::endl;
 
 	}
-	std::cout << "hier zumindest" << std::endl;
+	// std::cout << "hier zumindest" << std::endl;
 }
 	
 }//namespace HK

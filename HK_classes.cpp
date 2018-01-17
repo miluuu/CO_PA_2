@@ -41,6 +41,8 @@ Min_1_tree::Min_1_tree(NodeId const num_nodes)
    _incident_edges (std::vector < std::vector<Edge> > (num_nodes))
 {}
 
+
+
 double Min_1_tree::cost()
 {
 	double cost = 0;

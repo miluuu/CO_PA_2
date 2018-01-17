@@ -10,6 +10,7 @@ Edge::Edge()
 {
 	_nodes = std::pair <NodeId, NodeId> (invalid_node_id, invalid_node_id);
 	_cost = invalid_cost;
+	_euclidean_cost = invalid_cost;
 	_id = -1;
 }
 
@@ -22,6 +23,7 @@ Edge::Edge(NodeId const node1_id, NodeId const node2_id, std::vector<Node> & _no
 	Node & node2 = _nodes_coordinates.at(node2_id);
 	
 	_cost = distance(node1, node2);
+	_euclidean_cost = distance(node1, node2);
 	
 	_id = id;
 }
@@ -72,8 +74,8 @@ BranchingNode::BranchingNode(BranchingNode const & parent)
 	_required_edges(parent._required_edges), 
 	_forbidden_edges (parent._forbidden_edges), 
 	_lambda(parent._lambda),
-	_HK_bound(invalid_cost),
-	_HK_min_tree(Min_1_tree(parent._lambda.size()))
+	_HK_bound(parent._HK_bound),
+	_HK_min_tree(parent._HK_min_tree)
 	
 {}
 
@@ -99,6 +101,10 @@ void BranchingNode::set_HK_min_tree(Min_1_tree & min_tree)
 		_HK_min_tree = min_tree;
 }
 
+void BranchingNode::set_lambda_at(NodeId id, double value)
+{
+	_lambda.at(id) = value;
+}
 
 //////////////// Global functions //////////////////////
 		
@@ -122,7 +128,7 @@ TsplibId to_tsplib_id(NodeId const node_id)
    return static_cast<TsplibId>(node_id + 1);
 }
 
-size_type distance(Node &node1, Node &node2) 
+int distance(Node &node1, Node &node2) 
 {
 	double const x1 = node1._x_coord;
 	double const x2 = node2._x_coord;

@@ -34,6 +34,7 @@ size_type constexpr invalid_cost = std::numeric_limits<size_type>::max();
 NodeId from_tsplib_id(TsplibId const tsplib_id); //!< Subtracts 1 (throws if @c tsplib_id is 0)
 TsplibId to_tsplib_id(NodeId const node_id);     //!< Adds 1 (throws if overflow would occur)
 
+
 class Node 
 {
 private:	
@@ -46,16 +47,18 @@ public:
 	}
 	
 	// Computes rounded euclidean distance
-	friend size_type distance(Node &node1, Node &node2);
+	friend int distance(Node &node1, Node &node2);
 };
 
+int distance(Node &node1, Node &node2);
 
 
 class Edge
 {
 private:
 	std::pair<NodeId, NodeId> _nodes;
-	size_type _cost;
+	double _cost;
+	size_type _euclidean_cost;
 	size_type _id;
 public:
 	typedef std::size_t size_type;
@@ -70,7 +73,11 @@ public:
 	std::pair <NodeId, NodeId> const & nodes() const;
 	
 	// Returns the cost of this edge (not necessarily its rounded Euclidean length).
-	int cost();
+	double cost() const;
+	
+	// Returns the rounded euclidean cost of this edge.
+	size_type euclidean_cost()const;
+	
 	
 	//Sets a modified new cost for cost (needed in Held-Karp-lower-bound-algorithm)
 	void set_cost (double new_cost);
@@ -95,7 +102,7 @@ public:
 	NodeId num_nodes() const;
 	  
 	//returns the degree of the node with NodeId node_id  
-	size_type degree (NodeId node_id) const;
+	int degree (NodeId node_id) const;
 	
 	//returns the cost of the Min_1_tree
 	double cost();
@@ -137,8 +144,11 @@ public:
 	//adds an edge to _forbidden_edges
 	void add_forbidden_edge(Edge edge);
 	
-	//returns the id-th entry in required_edges
-	Edge const & required_edge(size_type id) const;
+	//returns the vector of required edges
+	std::vector<Edge> & required_edges();
+	
+	//returns the vector of forbidden edges
+	std::vector<Edge> & forbidden_edges();
 	
 	//returns _HK_min_tree
 	Min_1_tree & HK_min_tree();
@@ -146,11 +156,12 @@ public:
 	//sets _HK_min_tree to min_tree
 	void set_HK_min_tree(Min_1_tree & min_tree);
 	
-	//returns the number of required edges
-	size_type required_edges_size() const;
 	
 	//returns the vector with the lambda values
 	std::vector <double> & lambda();
+	
+	//sets the value of the id-th entry of lambda to value
+	void set_lambda_at(NodeId id, double value);
 };
 	
 
@@ -165,9 +176,15 @@ std::pair <NodeId, NodeId> const & Edge::nodes() const
 }
 
 inline
-int Edge::cost()
+double Edge::cost() const
 {
 	return _cost;
+}
+
+inline
+size_type Edge::euclidean_cost() const
+{
+	return _euclidean_cost;
 }
 
 inline
@@ -185,7 +202,7 @@ NodeId Min_1_tree::num_nodes() const
 
 
 inline
-size_type Min_1_tree::degree(NodeId node_id) const
+int Min_1_tree::degree(NodeId node_id) const
 {
    return (_incident_edges.at(node_id)).size();
 }
@@ -203,9 +220,9 @@ size_type BranchingNode::HK_bound()   const
 }
 
 inline
-Edge const & BranchingNode::required_edge(size_type id) const
+std::vector<Edge> & BranchingNode::required_edges() 
 {
-	return _required_edges.at(id);
+	return _required_edges;
 }
 
 inline
@@ -214,10 +231,11 @@ Min_1_tree & BranchingNode::HK_min_tree()
 	return _HK_min_tree;
 }
 
+
 inline
-size_type BranchingNode::required_edges_size() const
+std::vector<Edge> & BranchingNode::forbidden_edges() 
 {
-	return _required_edges.size();
+	return _forbidden_edges;
 }
 
 inline
